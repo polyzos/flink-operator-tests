@@ -6,7 +6,6 @@ import io.ipolyzos.source.SensorSource;
 import org.apache.flink.api.common.eventtime.SerializableTimestampAssigner;
 import org.apache.flink.api.common.eventtime.WatermarkStrategy;
 import org.apache.flink.streaming.api.datastream.DataStream;
-import org.apache.flink.streaming.api.datastream.SingleOutputStreamOperator;
 import org.apache.flink.streaming.api.environment.StreamExecutionEnvironment;
 import org.apache.flink.streaming.api.functions.windowing.WindowFunction;
 import org.apache.flink.streaming.api.windowing.assigners.TumblingEventTimeWindows;
@@ -17,7 +16,6 @@ import org.apache.flink.util.Collector;
 import java.sql.Timestamp;
 import java.time.Duration;
 import java.util.stream.Collectors;
-import java.util.stream.LongStream;
 import java.util.stream.StreamSupport;
 
 public class AverageSensorReadings {
@@ -42,15 +40,15 @@ public class AverageSensorReadings {
                 .map(r -> new SensorReading(r.getSensorId(), r.getTimestamp(), (r.getTemperature() - 32) * (5.0 / 9.0)))
                 .keyBy(SensorReading::getSensorId)
                 .window(TumblingEventTimeWindows.of(Time.seconds(1)))
-                .apply(new AverageTemperatureFunc());
+                .apply(new AverageTemperatureFunc())
+                .name("WindowedAverageTemperature")
+                .uid("WindowedAverageTemperature");
 
         windowedTempAverage.print();
         executionEnvironment.execute("Compute Average Sensor Temperature.");
     }
 
     public static class AverageTemperatureFunc implements WindowFunction<SensorReading, WindowedReadingAverage, String, TimeWindow> {
-
-
         @Override
         public void apply(String key, TimeWindow timeWindow, Iterable<SensorReading> iterable, Collector<WindowedReadingAverage> collector) throws Exception {
             // compute the average temperature
