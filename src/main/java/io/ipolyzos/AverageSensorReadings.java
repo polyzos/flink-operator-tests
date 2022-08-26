@@ -22,7 +22,6 @@ public class AverageSensorReadings {
     public static void main(String[] args) throws Exception {
         StreamExecutionEnvironment executionEnvironment = StreamExecutionEnvironment.getExecutionEnvironment();
         executionEnvironment.getConfig().setAutoWatermarkInterval(1000L);
-        executionEnvironment.setParallelism(1);
 
         WatermarkStrategy<SensorReading> watermarkStrategy =
                 WatermarkStrategy.<SensorReading>forBoundedOutOfOrderness(Duration.ofSeconds(0))
